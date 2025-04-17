@@ -16,9 +16,15 @@ const client = new Client({
     ]
 });
 
-// Basic route to keep the service alive
+// Enhanced health check endpoint
 app.get('/', (req, res) => {
-    res.send('Discord Welcome Bot is running!');
+    const status = {
+        status: 'online',
+        botStatus: client.ws.status,
+        uptime: process.uptime(),
+        timestamp: new Date().toISOString()
+    };
+    res.json(status);
 });
 
 // Start the Express server
