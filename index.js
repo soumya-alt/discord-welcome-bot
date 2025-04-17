@@ -14,6 +14,10 @@ const client = new Client({
 // When the client is ready, run this code (only once)
 client.once('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`);
+    // Keep the process alive
+    setInterval(() => {
+        console.log('Bot is alive!');
+    }, 60000); // Log every minute
 });
 
 // Listen for new members joining
@@ -51,6 +55,13 @@ client.on('error', error => {
 
 process.on('unhandledRejection', error => {
     console.error('Unhandled promise rejection:', error);
+});
+
+// Keep the process alive
+process.on('SIGTERM', () => {
+    console.log('Received SIGTERM, shutting down gracefully...');
+    client.destroy();
+    process.exit(0);
 });
 
 // Login to Discord with your client's token
