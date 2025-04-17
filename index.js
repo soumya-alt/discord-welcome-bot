@@ -13,20 +13,21 @@ const client = new Client({
 
 // When the client is ready, run this code (only once)
 client.once('ready', () => {
-    console.log(`Logged in as ${client.user.tag}!`);
-    // Keep the process alive
+    console.log(`[${new Date().toISOString()}] Bot is ready! Logged in as ${client.user.tag}`);
+    // Keep the process alive and log status
     setInterval(() => {
-        console.log('Bot is alive!');
-    }, 60000); // Log every minute
+        console.log(`[${new Date().toISOString()}] Bot is alive! Ping: ${client.ws.ping}ms`);
+    }, 30000); // Log every 30 seconds
 });
 
 // Listen for new members joining
 client.on('guildMemberAdd', async (member) => {
     try {
+        console.log(`[${new Date().toISOString()}] New member joined: ${member.user.tag}`);
         const welcomeChannel = await client.channels.fetch(process.env.WELCOME_CHANNEL_ID);
         
         if (!welcomeChannel) {
-            console.error('Welcome channel not found!');
+            console.error(`[${new Date().toISOString()}] Welcome channel not found!`);
             return;
         }
 
@@ -43,26 +44,39 @@ client.on('guildMemberAdd', async (member) => {
             .setFooter({ text: `ID: ${member.user.id}` });
 
         await welcomeChannel.send({ embeds: [welcomeEmbed] });
+        console.log(`[${new Date().toISOString()}] Welcome message sent for ${member.user.tag}`);
     } catch (error) {
-        console.error('Error sending welcome message:', error);
+        console.error(`[${new Date().toISOString()}] Error sending welcome message:`, error);
     }
 });
 
 // Handle errors
 client.on('error', error => {
-    console.error('Discord client error:', error);
+    console.error(`[${new Date().toISOString()}] Discord client error:`, error);
 });
 
 process.on('unhandledRejection', error => {
-    console.error('Unhandled promise rejection:', error);
+    console.error(`[${new Date().toISOString()}] Unhandled promise rejection:`, error);
 });
 
-// Keep the process alive
-process.on('SIGTERM', () => {
-    console.log('Received SIGTERM, shutting down gracefully...');
-    client.destroy();
+// Handle process termination
+const shutdown = async () => {
+    console.log(`[${new Date().toISOString()}] Shutting down gracefully...`);
+    try {
+        await client.destroy();
+        console.log(`[${new Date().toISOString()}] Discord client destroyed`);
+    } catch (error) {
+        console.error(`[${new Date().toISOString()}] Error during shutdown:`, error);
+    }
     process.exit(0);
-});
+};
+
+process.on('SIGTERM', shutdown);
+process.on('SIGINT', shutdown);
 
 // Login to Discord with your client's token
-client.login(process.env.DISCORD_TOKEN); 
+console.log(`[${new Date().toISOString()}] Starting bot...`);
+client.login(process.env.DISCORD_TOKEN).catch(error => {
+    console.error(`[${new Date().toISOString()}] Login error:`, error);
+    process.exit(1);
+}); 
