@@ -1,5 +1,10 @@
 require('dotenv').config();
 const { Client, GatewayIntentBits, EmbedBuilder } = require('discord.js');
+const express = require('express');
+
+// Create Express app
+const app = express();
+const PORT = process.env.PORT || 3000;
 
 // Create a new client instance
 const client = new Client({
@@ -9,6 +14,16 @@ const client = new Client({
         GatewayIntentBits.GuildMessages,
         GatewayIntentBits.MessageContent
     ]
+});
+
+// Basic route to keep the service alive
+app.get('/', (req, res) => {
+    res.send('Discord Welcome Bot is running!');
+});
+
+// Start the Express server
+app.listen(PORT, () => {
+    console.log(`[${new Date().toISOString()}] Express server running on port ${PORT}`);
 });
 
 // When the client is ready, run this code (only once)
